@@ -14,6 +14,9 @@ const queueSchema = new mongoose.Schema({
         type:Number,
         default:0
     }
-})
+    
+},
+    {timestamps:true}
+)
 
 module.exports = mongoose.model('Queue',queueSchema)
