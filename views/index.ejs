@@ -142,6 +142,7 @@
             font-weight: 500;
             padding: 14px 0;
             width: 100%;
+            border-radius: 50px;
         }
 
         .search-input::placeholder {
@@ -474,9 +475,9 @@
             <!-- Home page -->
             <div class="home-container">
                 <% if (typeof logoPath !== 'undefined' && logoPath) { %>
-                    <img src="/logo/logo.png" alt="N-jin" style="max-width: min(200px, 60vw); margin-bottom: 1.5rem;">
-                <% } else { %>
                     <h1 class="njin-logo">N-jin</h1>
+                <% } else { %>
+                    <img src="<%= logoPath %>" alt="N-jin" style="max-width: min(200px, 60vw); margin-bottom: 1.5rem;">
                 <% } %>
                 
                 <p class="tagline">Search smarter, find faster</p>
@@ -507,10 +508,12 @@
                     <div class="d-flex align-items-center flex-wrap gap-3">
                         <% if (typeof logoPath !== 'undefined' && logoPath) { %>
                             <a href="/" aria-label="Go to homepage">
-                                <img src="/logo/logo.png" alt="N-jin" style="width: clamp(50px, 10vw, 60px);">
+                            <a href="/" class="njin-logo-small" aria-label="Go to homepage">N-jin</a>
+
                             </a>
                         <% } else { %>
-                            <a href="/" class="njin-logo-small" aria-label="Go to homepage">N-jin</a>
+                                <img src="<%= logoPath %>" alt="N-jin" style="width: clamp(50px, 10vw, 60px);">
+
                         <% } %>
                         
                         <form action="/search" method="GET" style="flex: 1; max-width: 600px; min-width: 0;">
