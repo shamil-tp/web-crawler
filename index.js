@@ -42,13 +42,68 @@ app.get('/search', async (req, res) => {
         const totalPages = Math.ceil(totalResults / limit);
 
         // 3. The Paginated Search Query
-        const results = await Site.find(
-            { $text: { $search: searchQuery } }, 
-            { relevanceScore: { $meta: "textScore" } } 
-        )
-        .sort({ relevanceScore: { $meta: "textScore" } })
-        .skip(skip)   // THE FIX: Jump over the previous pages!
-        .limit(limit); // Only grab 15 for the current page
+        // THE MAGIC: The N-jin Aggregation Ranking Engine
+        const results = await Site.aggregate([
+            // 1. FILTER: Grab only pages that actually contain the search keywords
+            { $match: { $text: { $search: searchQuery } } },
+
+            // 2. CALCULATE: Define the raw mathematical variables
+            { 
+                $addFields: {
+                    // Get the base TF-IDF text score
+                    baseScore: { $meta: "textScore" },
+                    
+                    // Depth Multiplier: Level 0 = 1.0, Level 1 = 0.5, Level 4 = 0.2
+                    depthMultiplier: { $divide: [1, { $add: ["$level", 1] }] },
+                    
+                    // Authority Boost: External links are mathematically worth 10x more than Internal links
+                    authorityBoost: { 
+                        $log10: { 
+                            $add: [
+                                { $multiply: [{ $ifNull: ["$externalBacklinks", 0] }, 10] }, 
+                                { $ifNull: ["$internalBacklinks", 0] }, 
+                                10 
+                            ] 
+                        } 
+                    },
+
+                    // Heuristics: Did the user's exact query appear in the URL or the Title?
+                    isTitleMatch: { $regexMatch: { input: "$title", regex: searchQuery, options: "i" } },
+                    // Replace spaces with hyphens for the URL check (e.g. "react router" -> "react-router")
+                    isUrlMatch: { $regexMatch: { input: "$url", regex: searchQuery.replace(/\s+/g, '-'), options: "i" } }
+                }
+            },
+
+            // 3. APPLY HEURISTIC MULTIPLIERS
+            {
+                $addFields: {
+                    // If the keyword is literally in the Title, triple the score!
+                    titleMultiplier: { $cond: [{ $eq: ["$isTitleMatch", true] }, 3, 1] }, 
+                    // If the keyword is in the URL slug, double the score!
+                    urlMultiplier: { $cond: [{ $eq: ["$isUrlMatch", true] }, 2, 1] }     
+                }
+            },
+
+            // 4. COMBINE: The Final Equation
+            {
+                $addFields: {
+                    njinScore: { 
+                        $multiply: [
+                            "$baseScore", 
+                            "$depthMultiplier", 
+                            "$authorityBoost",
+                            "$titleMultiplier",
+                            "$urlMultiplier"
+                        ] 
+                    }
+                }
+            },
+
+            // 5. SORT & PAGINATE: Highest N-jin Score wins
+            { $sort: { njinScore: -1 } },
+            { $skip: skip },
+            { $limit: limit }
+        ]);
 
         // 4. Send all this rich data to the EJS view
         res.render('index', { 

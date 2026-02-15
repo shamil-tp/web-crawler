@@ -8,9 +8,11 @@ const siteSchema = new mongoose.Schema({
     description: { type: String },
     h1: { type: String },
     content: { type: String },
-    favicon: { type: String } // NEW FIELD
+    favicon: { type: String },
+    // REPLACE 'backlinks' WITH THESE TWO:
+    internalBacklinks: { type: Number, default: 0 }, 
+    externalBacklinks: { type: Number, default: 0 }  
 });
-
 siteSchema.index(
     { 
         title: 'text', 
