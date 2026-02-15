@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const express = require('express');
 const mongoose = require('mongoose');
 const Site = require('./modal/Site');
@@ -150,10 +152,8 @@ app.get('/statistics', async (req, res) => {
     }
 });
 
-// --- START SERVER ---
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
-    // ⚠️ REPLACE <PASSWORD> WITH YOUR ACTUAL ATLAS PASSWORD ⚠️
-    await dbConnect("mongodb+srv://shamil:urcx5298@mysnapgram.zq2yd.mongodb.net/crawler");
+    await dbConnect(process.env.DB_URL);
     console.log(`🚀 N-jin Server is live at http://localhost:${PORT}`);
 });

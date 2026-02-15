@@ -186,7 +186,7 @@ const startManager = async () => {
 
 (async () => {
     // ⚠️ Don't forget to change this password before deploying!
-    await dbConnect("mongodb+srv://shamil:urcx5298@mysnapgram.zq2yd.mongodb.net/crawler");
+    await dbConnect(process.env.DB_URL);
     
     await Domain.updateOne(
         { hostname: "github.com" }, 

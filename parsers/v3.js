@@ -119,6 +119,6 @@ const webCrawler = async (url) => {
 }
 
 (async () => {
-    await dbConnect("mongodb+srv://shamil:urcx5298@mysnapgram.zq2yd.mongodb.net/crawler")
+    await dbConnect(process.env.DB_URL)
     await webCrawler(startUrl)
 })()
