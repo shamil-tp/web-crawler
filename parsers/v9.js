@@ -7,7 +7,7 @@ const Site = require('../modal/Site');
 const Domain = require('../modal/Domain'); 
 // REMOVED: Queue model (MongoDB queue is now obsolete)
 
-const CONCURRENT_DOMAINS = porcess.env.CONCURRENT_DOMAINS;
+const CONCURRENT_DOMAINS = process.env.CONCURRENT_DOMAINS;
 
 // --- INITIALIZE REDIS CLIENT ---
 const redisClient = redis.createClient({
