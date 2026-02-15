@@ -5,309 +5,710 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>N-jin Search</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Bricolage+Grotesque:wght@600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
         :root {
-    --bg-color: #f6f9ff;
-    --primary-gradient: linear-gradient(135deg, #3b82f6, #6366f1, #8b5cf6);
-    --primary-blue: #4f46e5;
-    --title-visited: #7c3aed;
-    --text-main: #4b5563;
-    --text-dark: #111827;
-    --border-light: #e5e7eb;
-}
-
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-dark);
-            -webkit-font-smoothing: antialiased;
+            --bg-dark: #0a0a0f;
+            --bg-card: #16161f;
+            --accent-primary: #00f5ff;
+            --accent-secondary: #ff00ff;
+            --accent-tertiary: #00ff88;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #6b6b7a;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --glow-cyan: rgba(0, 245, 255, 0.3);
+            --glow-magenta: rgba(255, 0, 255, 0.3);
         }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-    background: radial-gradient(circle at top left, #eef2ff, #f8fafc);
-}
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
 
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+            animation: gridMove 20s linear infinite;
+        }
 
-        /* --- THE LOGO --- */
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Gradient orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--accent-primary), transparent);
+            top: -250px;
+            left: -250px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--accent-secondary), transparent);
+            top: 50%;
+            right: -200px;
+            animation-delay: 5s;
+        }
+
+        .orb-3 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, var(--accent-tertiary), transparent);
+            bottom: -100px;
+            left: 30%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        /* Content wrapper */
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Logo styling */
         .njin-logo {
-            font-size: 5.5rem;
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 6rem;
             font-weight: 800;
-            background: linear-gradient(45deg, #4285f4, #ea4335, #fbbc05, #34a853);
+            letter-spacing: -4px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary), var(--accent-tertiary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: -3px;
+            background-clip: text;
             user-select: none;
+            position: relative;
+            display: inline-block;
+            animation: logoGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes logoGlow {
+            0%, 100% { 
+                filter: drop-shadow(0 0 20px var(--glow-cyan));
+            }
+            50% { 
+                filter: drop-shadow(0 0 40px var(--glow-magenta));
+            }
         }
 
         .njin-logo-small {
-            font-size: 2.2rem;
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 1.8rem;
             font-weight: 800;
-            background: linear-gradient(45deg, #4285f4, #ea4335, #fbbc05, #34a853);
+            letter-spacing: -1.5px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: -1.5px;
+            background-clip: text;
             text-decoration: none;
-            padding-right: 20px;
+            transition: all 0.3s ease;
         }
 
-        /* --- SEARCH BAR EFFECTS --- */
+        .njin-logo-small:hover {
+            filter: drop-shadow(0 0 15px var(--glow-cyan));
+        }
+
+        /* Tagline */
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 1.5rem;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards;
+            animation-delay: 0.3s;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Search container */
         .search-container {
-    background: #ffffff;
-    border-radius: 50px;
-    border: 1px solid #e5e7eb;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 20px rgba(99,102,241,0.08);
-}
+            background: rgba(22, 22, 31, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 8px 8px 8px 24px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
 
-.search-container:hover,
-.search-container:focus-within {
-    box-shadow: 0 8px 30px rgba(99,102,241,0.18);
-    transform: translateY(-2px);
-}
+        .search-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                var(--accent-primary), 
+                var(--accent-secondary), 
+                transparent
+            );
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
 
+        .search-container:hover::before,
+        .search-container:focus-within::before {
+            opacity: 1;
+        }
 
-        .form-control:focus {
-            box-shadow: none;
+        .search-container:hover,
+        .search-container:focus-within {
+            border-color: rgba(0, 245, 255, 0.3);
+            box-shadow: 
+                0 8px 32px rgba(0, 245, 255, 0.15),
+                0 0 60px rgba(0, 245, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
         }
 
         .search-input {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
             font-size: 1.1rem;
-            color: var(--text-dark);
+            font-weight: 500;
+            padding: 16px 0;
         }
 
-        /* --- SEARCH RESULTS LIST (FLAT DESIGN) --- */
-        .results-wrapper {
-            max-width: 700px; /* Optimal reading width for text */
-            margin-left: max(100px, 5%);
+        .search-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
         }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .search-icon {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-container:focus-within .search-icon {
+            color: var(--accent-primary);
+        }
+
+        /* Search button */
         .njin-btn {
-    background: var(--primary-gradient);
-    border: none;
-    color: white;
-    font-weight: 600;
-    padding: 12px 22px;
-    border-radius: 50px;
-    transition: all 0.3s ease;
-    transform: translateX(-9%);
-}
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            color: var(--bg-dark);
+            font-weight: 700;
+            padding: 14px 32px;
+            border-radius: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
 
-.njin-btn:hover {
-    transform: scale(1.05);
-    transform: translateX(-9%);
-    box-shadow: 0 6px 20px rgba(99,102,241,0.4);
-}
+        .njin-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
 
+        .njin-btn:hover::before {
+            left: 100%;
+        }
+
+        .njin-btn:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 
+                0 10px 30px rgba(0, 245, 255, 0.4),
+                0 0 40px rgba(255, 0, 255, 0.3);
+        }
+
+        .njin-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Header/Navbar */
+        .search-header {
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Results wrapper */
+        .results-wrapper {
+            max-width: 780px;
+            margin-left: max(120px, 8%);
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
 
         @media (max-width: 768px) {
-            .results-wrapper { margin-left: auto; margin-right: auto; }
+            .results-wrapper { 
+                margin-left: auto; 
+                margin-right: auto; 
+                padding: 0 1rem;
+            }
         }
 
+        /* Result items */
         .result-item {
-            margin-bottom: 2.5rem; /* Generous spacing instead of borders */
+            margin-bottom: 3rem;
+            padding: 1.5rem;
+            background: rgba(22, 22, 31, 0.3);
+            border-radius: 16px;
+            border: 1px solid var(--border-subtle);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
 
+        .result-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--accent-primary), var(--accent-secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .result-item:hover::before {
+            opacity: 1;
+        }
+
+        .result-item:hover {
+            background: rgba(22, 22, 31, 0.6);
+            border-color: rgba(0, 245, 255, 0.2);
+            transform: translateX(8px);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                -4px 0 20px rgba(0, 245, 255, 0.1);
+        }
+
+        /* URL container */
         .result-url-container {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
         }
 
         .favicon-img {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background-color: #f1f3f4;
-            padding: 2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 3px;
         }
 
         .result-url {
-            color: var(--text-dark);
-            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
             text-decoration: none;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            transition: color 0.3s ease;
         }
 
+        .result-url:hover {
+            color: var(--accent-primary);
+        }
+
+        /* Result title */
         .result-title {
-    background: var(--primary-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-size: 1.25rem;
-    font-weight: 600;
-    text-decoration: none;
-}
+            color: var(--text-primary);
+            font-size: 1.35rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
 
-
-        .result-title:visited {
-            color: var(--title-visited);
+        .result-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            transition: width 0.3s ease;
         }
 
         .result-title:hover {
-            text-decoration: underline;
+            color: var(--accent-primary);
         }
 
+        .result-title:hover::after {
+            width: 100%;
+        }
+
+        .result-title:visited {
+            color: var(--text-secondary);
+        }
+
+        /* Result description */
         .result-desc {
-            color: var(--text-main);
-            font-size: 0.875rem;
-            line-height: 1.58;
-            word-wrap: break-word;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 0;
         }
 
-        /* --- MODERN PAGINATION --- */
+        /* Stats bar */
+        .stats-bar {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-subtle);
+            letter-spacing: 0.5px;
+        }
+
+        /* Pagination */
         .njin-pagination {
             display: flex;
-            gap: 8px;
-            padding-top: 20px;
+            gap: 12px;
+            padding: 2rem 0;
+            align-items: center;
         }
 
         .page-btn {
-            color: var(--primary-blue);
-            background: none;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 100px;
+            background: rgba(22, 22, 31, 0.6);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 12px;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 0.9rem;
-            transition: background-color 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .page-btn:hover {
-            background-color: #f1f3f4;
-            color: var(--primary-blue);
+            background: rgba(0, 245, 255, 0.1);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 245, 255, 0.2);
         }
 
         .page-indicator {
-            padding: 8px 16px;
-            color: var(--text-dark);
-            font-weight: 500;
-            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0 12px;
+        }
+
+        /* No results styling */
+        .no-results {
+            background: rgba(22, 22, 31, 0.4);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+        }
+
+        .no-results h2 {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .no-results ul {
+            text-align: left;
+            max-width: 500px;
+            margin: 0 auto;
+            color: var(--text-secondary);
+        }
+
+        .no-results li {
+            margin-bottom: 0.5rem;
+            line-height: 1.8;
+        }
+
+        /* Animations on load */
+        .result-item {
+            opacity: 0;
+            animation: resultSlideIn 0.5s ease forwards;
+        }
+
+        .result-item:nth-child(1) { animation-delay: 0.1s; }
+        .result-item:nth-child(2) { animation-delay: 0.2s; }
+        .result-item:nth-child(3) { animation-delay: 0.3s; }
+        .result-item:nth-child(4) { animation-delay: 0.4s; }
+        .result-item:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes resultSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .njin-logo {
+                font-size: 4rem;
+                letter-spacing: -2px;
+            }
+
+            .tagline {
+                font-size: 0.85rem;
+            }
+
+            .search-input {
+                font-size: 1rem;
+            }
+
+            .result-title {
+                font-size: 1.15rem;
+            }
         }
     </style>
 </head>
 
 <body>
+    <!-- Animated background orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
 
-    <% if (!results) { %>
-        <div class="container d-flex flex-column justify-content-center align-items-center vh-100">
-            <!-- <h1 class="njin-logo mb-4">N-jin</h1> -->
-             <img src="/logo/logo.png" alt="">
-             <p class="text-muted mt-3" style="font-weight:500;">
-    Discover the web differently.
-</p>
-
-            <form action="/search" method="GET" class="w-100 px-3" style="max-width: 620px;">
-    <div class="search-container d-flex align-items-center">
-        
-        <i class="bi bi-search text-muted ms-3 me-2"></i>
-
-        <input type="text" name="q"
-            class="form-control border-0 search-input py-3 shadow-none"
-            placeholder="Search the web"
-            required autofocus autocomplete="off">
-
-        <button type="submit" class="njin-btn">
-            Search
-        </button>
-
-    </div>
-</form>
-
-        </div>
-    <% } else { %>
-
-    <div class="container-fluid py-3 border-bottom sticky-top" style="background-color: var(--bg-color);">
-            <div class="d-flex align-items-center px-md-4 flex-wrap gap-3">
-                <a href="/" class="njin-logo-small"><img src="/logo/logo.png" alt="" width="70px"></a>
+    <div class="content-wrapper">
+        <% if (!results) { %>
+            <!-- Home page -->
+            <div class="container d-flex flex-column justify-content-center align-items-center vh-100">
+                <% if (typeof logoPath !== 'undefined' && logoPath) { %>
+                    <img src="<%= logoPath %>" alt="N-jin" style="max-width: 200px; margin-bottom: 2rem; filter: drop-shadow(0 0 30px var(--glow-cyan));">
+                <% } else { %>
+                    <h1 class="njin-logo">N-jin</h1>
+                <% } %>
                 
-                <form action="/search" method="GET" style="flex: 1; max-width: 650px;">
-                    <div class="search-container d-flex align-items-center px-3">
-                        <input type="text" name="q" class="form-control border-0 search-input py-2 shadow-none" value="<%= query %>" required autocomplete="off">
-                        <button class="btn border-0 text-primary" type="submit">
-                            <i class="bi bi-search" style="font-size: 1.1rem;"></i>
+                <p class="tagline">Discover Beyond Limits</p>
+
+                <form action="/search" method="GET" class="w-100 px-3 mt-5" style="max-width: 680px;">
+                    <div class="search-container d-flex align-items-center">
+                        <i class="bi bi-search search-icon me-3"></i>
+                        <input 
+                            type="text" 
+                            name="q"
+                            class="form-control search-input flex-grow-1"
+                            placeholder="Search the infinite web..."
+                            required 
+                            autofocus 
+                            autocomplete="off">
+                        <button type="submit" class="njin-btn ms-3">
+                            Search
                         </button>
                     </div>
                 </form>
             </div>
-        </div>
 
-        <div class="container-fluid mt-4 mb-5">
-            <div class="results-wrapper">
-                
-                <p class="text-muted small mb-4 pb-2 border-bottom" style="color: #70757a !important;">
-                    About <%= totalResults.toLocaleString() %> results
-                </p>
-
-                <% if (results.length === 0) { %>
-                    <div class="mt-4">
-                        <p class="mb-3" style="font-size: 1.1rem;">Your search - <strong><%= query %></strong> - did not match any documents.</p>
-                        <p class="mb-2">Suggestions:</p>
-                        <ul class="text-muted" style="line-height: 1.8;">
-                            <li>Make sure all words are spelled correctly.</li>
-                            <li>Try different or more general keywords.</li>
-                            <li>Give the N-jin crawler more time to index the web.</li>
-                        </ul>
-                    </div>
-                <% } else { %>
-
-                    <% results.forEach(site => { %>
-                        <div class="result-item">
-                            
-                            <div class="result-url-container">
-                                <% if (site.favicon) { %>
-                                    <img src="<%= site.favicon %>" alt="" class="favicon-img" onerror="this.style.display='none'">
-                                <% } else { %>
-                                    <div class="favicon-img d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-globe2" style="font-size: 10px; color: #70757a;"></i>
-                                    </div>
-                                <% } %>
-                                <a href="<%= site.url %>" class="result-url">
-                                    <%= site.url.replace(/^https?:\/\//, '') %>
-                                </a>
-                            </div>
-                            
-                            <a href="<%= site.url %>" class="result-title">
-                                <%= site.title %>
+        <% } else { %>
+            <!-- Results page -->
+            <div class="search-header py-3">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center flex-wrap gap-3">
+                        <% if (typeof logoPath !== 'undefined' && logoPath) { %>
+                            <a href="/">
+                                <img src="<%= logoPath %>" alt="N-jin" style="width: 60px; filter: drop-shadow(0 0 10px var(--glow-cyan));">
                             </a>
-                            
-                            <p class="result-desc mb-0">
-                                <% if (site.description) { %>
-                                    <%= site.description %>
-                                <% } else { %>
-                                    <%= site.content.substring(0, 160) %>...
-                                <% } %>
-                            </p>
-                        </div>
-                    <% }) %>
-
-                    <div class="njin-pagination mt-5 pt-3 border-top">
-                        <% if (currentPage > 1) { %>
-                            <a href="/search?q=<%= encodeURIComponent(query) %>&page=<%= currentPage - 1 %>" class="page-btn">
-                                <i class="bi bi-chevron-left me-1"></i> Previous
-                            </a>
+                        <% } else { %>
+                            <a href="/" class="njin-logo-small">N-jin</a>
                         <% } %>
                         
-                        <span class="page-indicator">Page <%= currentPage %> of <%= totalPages %></span>
-
-                        <% if (currentPage < totalPages) { %>
-                            <a href="/search?q=<%= encodeURIComponent(query) %>&page=<%= currentPage + 1 %>" class="page-btn">
-                                Next <i class="bi bi-chevron-right ms-1"></i>
-                            </a>
-                        <% } %>
+                        <form action="/search" method="GET" style="flex: 1; max-width: 650px;">
+                            <div class="search-container d-flex align-items-center">
+                                <i class="bi bi-search search-icon me-3"></i>
+                                <input 
+                                    type="text" 
+                                    name="q" 
+                                    class="form-control search-input flex-grow-1" 
+                                    value="<%= query %>" 
+                                    required 
+                                    autocomplete="off">
+                                <button class="btn border-0 p-2" type="submit" style="color: var(--accent-primary);">
+                                    <i class="bi bi-arrow-right-circle-fill" style="font-size: 1.8rem;"></i>
+                                </button>
+                            </div>
+                        </form>
                     </div>
-
-                <% } %> 
+                </div>
             </div>
-        </div>
 
-    <% } %> 
+            <div class="container-fluid mt-4 mb-5">
+                <div class="results-wrapper">
+                    
+                    <p class="stats-bar">
+                        About <%= totalResults.toLocaleString() %> results
+                    </p>
+
+                    <% if (results.length === 0) { %>
+                        <div class="no-results mt-5">
+                            <h2>No results found for "<%= query %>"</h2>
+                            <p class="text-muted mb-4">Try adjusting your search or explore these suggestions:</p>
+                            <ul>
+                                <li>Check your spelling and try again</li>
+                                <li>Use more general or different keywords</li>
+                                <li>Give our crawlers time to index more content</li>
+                                <li>Try searching for related terms</li>
+                            </ul>
+                        </div>
+                    <% } else { %>
+
+                        <div class="mt-4">
+                            <% results.forEach(site => { %>
+                                <div class="result-item">
+                                    <div class="result-url-container">
+                                        <% if (site.favicon) { %>
+                                            <img src="<%= site.favicon %>" alt="" class="favicon-img" onerror="this.style.display='none'">
+                                        <% } else { %>
+                                            <div class="favicon-img d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-globe2" style="font-size: 10px; color: var(--text-muted);"></i>
+                                            </div>
+                                        <% } %>
+                                        <a href="<%= site.url %>" class="result-url">
+                                            <%= site.url.replace(/^https?:\/\//, '') %>
+                                        </a>
+                                    </div>
+                                    
+                                    <a href="<%= site.url %>" class="result-title d-block">
+                                        <%= site.title %>
+                                    </a>
+                                    
+                                    <p class="result-desc">
+                                        <% if (site.description) { %>
+                                            <%= site.description %>
+                                        <% } else { %>
+                                            <%= site.content.substring(0, 180) %>...
+                                        <% } %>
+                                    </p>
+                                </div>
+                            <% }) %>
+                        </div>
+
+                        <div class="njin-pagination mt-5">
+                            <% if (currentPage > 1) { %>
+                                <a href="/search?q=<%= encodeURIComponent(query) %>&page=<%= currentPage - 1 %>" class="page-btn">
+                                    <i class="bi bi-chevron-left"></i>
+                                    Previous
+                                </a>
+                            <% } %>
+                            
+                            <span class="page-indicator">Page <%= currentPage %> of <%= totalPages %></span>
+
+                            <% if (currentPage < totalPages) { %>
+                                <a href="/search?q=<%= encodeURIComponent(query) %>&page=<%= currentPage + 1 %>" class="page-btn">
+                                    Next
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            <% } %>
+                        </div>
+
+                    <% } %> 
+                </div>
+            </div>
+
+        <% } %> 
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
