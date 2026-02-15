@@ -45,13 +45,19 @@ const crawlOnePage = async (domain) => {
         const currentUrl = currentItem.url;
         const currentLevel = currentItem.level;
         
-        // 2. THE ARMOR: 5MB File Limit
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); 
+
+        // 2. THE ARMOR: 5MB File Limit + Abort Signal
         const response = await axios.get(currentUrl, { 
-            timeout: 5000,
+            timeout: 5000, // Header timeout
+            signal: controller.signal, // The Hard Kill Switch
             validateStatus: (status) => status < 500,
             maxContentLength: 5 * 1024 * 1024, 
             maxBodyLength: 5 * 1024 * 1024 
         });
+
+        clearTimeout(timeoutId);
 
         // CHECK FOR BROKEN SITES
         if (response.status >= 400) {
