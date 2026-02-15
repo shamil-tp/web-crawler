@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N-jin Search</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --primary-blue: #4285f4;
+            --text-main: #202124;
+            --text-muted: #5f6368;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        /* --- THE LOGO --- */
+        .njin-logo {
+            font-size: 5.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #4285f4, #ea4335, #fbbc05, #34a853);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -3px;
+            user-select: none;
+        }
+
+        .njin-logo-small {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #4285f4, #ea4335, #fbbc05, #34a853);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1.5px;
+            text-decoration: none;
+        }
+
+        /* --- SEARCH BAR EFFECTS --- */
+        .search-container {
+            background: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #dfe1e5;
+        }
+
+        .search-container:hover,
+        .search-container:focus-within {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+            transform: translateY(-1px);
+            border-color: rgba(223, 225, 229, 0);
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+        }
+
+        /* --- SEARCH RESULTS CARDS --- */
+        .result-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+
+        .result-card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+            border-color: #d1d5db;
+        }
+
+        .result-url {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .result-title {
+            color: var(--primary-blue);
+            font-size: 1.35rem;
+            font-weight: 500;
+            text-decoration: none;
+            line-height: 1.3;
+        }
+
+        .result-title:hover {
+            text-decoration: underline;
+        }
+
+        .result-desc {
+            color: var(--text-main);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* --- PAGINATION --- */
+        .pagination .page-link {
+            border-radius: 8px;
+            margin: 0 4px;
+            border: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 8px 16px;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary-blue);
+            color: white;
+            box-shadow: 0 4px 6px rgba(66, 133, 244, 0.25);
+        }
+
+        .pagination .page-link:hover:not(.active) {
+            background-color: #f1f3f4;
+            color: var(--text-main);
+        }
+    </style>
+</head>
+
+<body>
+
+    <% if (!results) { %>
+        <div class="container d-flex flex-column justify-content-center align-items-center vh-100">
+            <h1 class="njin-logo mb-5">N-jin</h1>
+            <form action="/search" method="GET" class="w-100 px-3" style="max-width: 650px;">
+                <div class="search-container input-group input-group-lg rounded-pill overflow-hidden">
+                    <span class="input-group-text bg-transparent border-0 ps-4 text-muted">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="q" class="form-control border-0 px-2" placeholder="Search the web..."
+                        required autofocus autocomplete="off">
+                    <button class="btn border-0 pe-4 text-primary" type="submit" style="font-weight: 500;">
+                        Search
+                    </button>
+                </div>
+            </form>
+            <div class="mt-4 text-muted small">
+                N-jin Web Indexing Engine
+            </div>
+        </div>
+        <% } else { %>
+
+            <div class="container-fluid py-3 border-bottom bg-white sticky-top shadow-sm">
+                <div class="row align-items-center px-md-4">
+                    <div class="col-auto pe-4">
+                        <a href="/" class="njin-logo-small">N-jin</a>
+                    </div>
+                    <div class="col-12 col-md-7 mt-3 mt-md-0">
+                        <form action="/search" method="GET">
+                            <div class="search-container input-group rounded-pill overflow-hidden">
+                                <input type="text" name="q" class="form-control border-0 px-4 py-2" value="<%= query %>"
+                                    required autocomplete="off">
+                                <button class="btn bg-transparent border-0 px-4 text-primary" type="submit">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container mt-4 mb-5 px-3 px-md-5"
+                style="max-width: 850px; margin-left: auto; margin-right: auto;">
+
+                <p class="text-muted small mb-4 ms-2">
+                    About <strong>
+                        <%= totalResults.toLocaleString() %>
+                    </strong> results found for "<%= query %>"
+                </p>
+
+                <% if (results.length===0) { %>
+                    <div class="text-center mt-5 p-5 bg-white rounded-4 border shadow-sm">
+                        <i class="bi bi-search text-muted mb-3 d-block" style="font-size: 3rem;"></i>
+                        <h4 class="mb-3">No results for <strong>"<%= query %>"</strong></h4>
+                        <p class="text-muted">We couldn't find anything matching your search.</p>
+                        <ul class="list-unstyled text-muted small mt-4">
+                            <li class="mb-2"><i class="bi bi-check2 me-2"></i>Check your spelling</li>
+                            <li class="mb-2"><i class="bi bi-check2 me-2"></i>Try more general keywords</li>
+                            <li><i class="bi bi-check2 me-2"></i>Give the crawler more time to index the web</li>
+                        </ul>
+                    </div>
+                    <% } else { %>
+
+                        <% results.forEach(site=> { %>
+                            <div class="result-card mb-4">
+                                <div class="text-truncate mb-2 d-flex align-items-center">
+                                    <% if (site.favicon) { %>
+                                        <img src="<%= site.favicon %>" alt="icon"
+                                            style="width: 16px; height: 16px; margin-right: 8px; border-radius: 2px;"
+                                            onerror="this.style.display='none'">
+                                        <% } else { %>
+                                            <i class="bi bi-globe2 text-muted me-2" style="font-size: 14px;"></i>
+                                            <% } %>
+
+                                                <a href="<%= site.url %>" class="result-url mb-0">
+                                                    <%= site.url.replace(/^https?:\/\//, '' ) %>
+                                                </a>
+                                </div>
+
+                                <a href="<%= site.url %>" class="result-title d-inline-block mb-2">
+                                    <%= site.title %>
+                                </a>
+
+                                <p class="result-desc mb-0">
+                                    <% if (site.description) { %>
+                                        <%= site.description %>
+                                            <% } else { %>
+                                                <%= site.content.substring(0, 180) %>...
+                                                    <% } %>
+                                </p>
+                            </div>
+                            <% }) %>
+
+                                <div class="mt-5 d-flex justify-content-center">
+                                    <nav aria-label="Search results pages">
+                                        <ul class="pagination">
+                                            <% if (currentPage> 1) { %>
+                                                <li class="page-item">
+                                                    <a class="page-link shadow-sm"
+                                                        href="/search?q=<%= encodeURIComponent(query) %>&page=<%= currentPage - 1 %>">
+                                                        <i class="bi bi-chevron-left me-1"></i> Prev
+                                                    </a>
+                                                </li>
+                                                <% } %>
+
+                                                    <li class="page-item active">
+                                                        <span class="page-link shadow-sm px-4">Page <%= currentPage %>
+                                                                of <%= totalPages %></span>
+                                                    </li>
+
+                                                    <% if (currentPage < totalPages) { %>
+                                                        <li class="page-item">
+                                                            <a class="page-link shadow-sm"
+                                                                href="/search?q=<%= encodeURIComponent(query) %>&page=<%= currentPage + 1 %>">
+                                                                Next <i class="bi bi-chevron-right ms-1"></i>
+                                                            </a>
+                                                        </li>
+                                                        <% } %>
+                                        </ul>
+                                    </nav>
+                                </div>
+
+                                <% } %>
+            </div>
+
+            <% } %>
+
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

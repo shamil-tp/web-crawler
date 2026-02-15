@@ -6,6 +6,11 @@ const queueSchema = new mongoose.Schema({
         required:true,
         unique:true
     },
+    //      HOSTNAME ADDED TO AVOID REGEX
+    hostname:{
+        type:String,
+        required:true,
+    },
     visited:{
         type:Boolean,
         default:false,
