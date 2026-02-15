@@ -132,46 +132,16 @@ app.get('/search', async (req, res) => {
         res.status(500).send("Error executing search.");
     }
 });
-// 3. The N-jin Statistics Dashboard
 app.get('/statistics', async (req, res) => {
-    // Determine which tab is active (default to 'domains')
-    const tab = req.query.tab || 'domains';
-    const page = parseInt(req.query.page) || 1;
-    const limit = 20;
-    const skip = (page - 1) * limit;
-
     try {
-        // 1. Get the raw total counts for the top cards
         const totalDomains = await Domain.countDocuments();
         const completedDomains = await Domain.countDocuments({ status: "complete" });
         const totalQueues = await Queue.countDocuments();
         const visitedUrls = await Queue.countDocuments({ visited: true });
         const totalSites = await Site.countDocuments();
 
-        // 2. Fetch the specific table data based on the clicked tab
-        let tableData = [];
-        let totalItemsForTab = 0;
-
-        if (tab === 'domains') {
-            tableData = await Domain.find().sort({ lastCrawledAt: -1 }).skip(skip).limit(limit);
-            totalItemsForTab = totalDomains;
-        } else if (tab === 'queues') {
-            tableData = await Queue.find().sort({ _id: -1 }).skip(skip).limit(limit);
-            totalItemsForTab = totalQueues;
-        } else if (tab === 'sites') {
-            tableData = await Site.find().sort({ _id: -1 }).skip(skip).limit(limit);
-            totalItemsForTab = totalSites;
-        }
-
-        const totalPages = Math.ceil(totalItemsForTab / limit);
-
-        // 3. Send everything to the EJS view
         res.render('statistics', {
-            stats: { totalDomains, completedDomains, totalQueues, visitedUrls, totalSites },
-            tableData: tableData,
-            tab: tab,
-            currentPage: page,
-            totalPages: totalPages
+            stats: { totalDomains, completedDomains, totalQueues, visitedUrls, totalSites }
         });
 
     } catch (error) {

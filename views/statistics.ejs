@@ -44,20 +44,12 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             height: 100%;
             transition: all 0.2s ease;
-            cursor: pointer;
         }
 
         .stat-card:hover {
             box-shadow: 0 8px 16px rgba(0,0,0,0.08);
             transform: translateY(-2px);
             border-color: #d1d5db;
-        }
-
-        /* Highlight the currently selected tab */
-        .active-card {
-            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
-            transform: translateY(-2px);
-            background-color: #f8fbff; /* Very faint blue tint */
         }
 
         .stat-title {
@@ -85,52 +77,6 @@
             align-items: center;
             gap: 4px;
         }
-
-        /* --- TABLES --- */
-        .table-container {
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            overflow: hidden;
-        }
-        
-        .table th {
-            background-color: #f8f9fa;
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid #e5e7eb;
-            padding: 16px;
-        }
-        
-        .table td {
-            padding: 16px;
-            vertical-align: middle;
-            color: var(--text-dark);
-            font-size: 0.95rem;
-            border-bottom: 1px solid #f1f3f4;
-        }
-
-        .url-text {
-            color: var(--blue);
-            text-decoration: none;
-            max-width: 300px;
-            display: inline-block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .url-text:hover { text-decoration: underline; }
-
-        .badge-status {
-            font-weight: 500;
-            padding: 6px 12px;
-            border-radius: 100px;
-            font-size: 0.8rem;
-        }
     </style>
 </head>
 <body>
@@ -148,164 +94,38 @@
         <h3 class="fw-bold mb-4">Crawler Network Status</h3>
 
         <div class="row g-4 mb-5">
-            <a href="/statistics?tab=domains" class="col-md-4 text-decoration-none">
-                <div class="stat-card border-top border-primary border-4 <%= tab === 'domains' ? 'active-card' : '' %>">
-                    <div class="stat-title"><i class="bi bi-globe2 me-2"></i>Domains</div>
+            <div class="col-md-4">
+                <div class="stat-card border-top border-primary border-4">
+                    <div class="stat-title"><i class="bi bi-globe2 me-2"></i>Domains Discovered</div>
                     <div class="stat-value"><%= stats.totalDomains.toLocaleString() %></div>
                     <div class="stat-subtext text-muted">
                         <i class="bi bi-check-circle-fill text-success"></i> 
                         <%= stats.completedDomains.toLocaleString() %> fully crawled
                     </div>
                 </div>
-            </a>
+            </div>
             
-            <a href="/statistics?tab=queues" class="col-md-4 text-decoration-none">
-                <div class="stat-card border-top border-warning border-4 <%= tab === 'queues' ? 'active-card' : '' %>">
-                    <div class="stat-title"><i class="bi bi-link-45deg me-2"></i>URL Queue</div>
+            <div class="col-md-4">
+                <div class="stat-card border-top border-warning border-4">
+                    <div class="stat-title"><i class="bi bi-link-45deg me-2"></i>URLs in Queue</div>
                     <div class="stat-value"><%= stats.totalQueues.toLocaleString() %></div>
                     <div class="stat-subtext text-muted">
                         <i class="bi bi-check-circle-fill text-success"></i> 
                         <%= stats.visitedUrls.toLocaleString() %> visited
                     </div>
                 </div>
-            </a>
+            </div>
 
-            <a href="/statistics?tab=sites" class="col-md-4 text-decoration-none">
-                <div class="stat-card border-top border-success border-4 <%= tab === 'sites' ? 'active-card' : '' %>">
-                    <div class="stat-title"><i class="bi bi-database me-2"></i>Sites Indexed</div>
+            <div class="col-md-4">
+                <div class="stat-card border-top border-success border-4">
+                    <div class="stat-title"><i class="bi bi-database me-2"></i>Total Sites Indexed</div>
                     <div class="stat-value"><%= stats.totalSites.toLocaleString() %></div>
                     <div class="stat-subtext">
                         <i class="bi bi-graph-up-arrow"></i> Live Search Ready
                     </div>
                 </div>
-            </a>
-        </div>
-
-        <div class="table-container mb-4">
-            <div class="p-4 border-bottom bg-white d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0">
-                    <%= tab.charAt(0).toUpperCase() + tab.slice(1) %> Details
-                </h5>
-                <span class="badge bg-light text-dark border">
-                    Page <%= currentPage %> of <%= totalPages %>
-                </span>
-            </div>
-            
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    
-                    <% if (tab === 'domains') { %>
-                        <thead>
-                            <tr>
-                                <th>Hostname</th>
-                                <th>Status</th>
-                                <th>Last Crawled</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% tableData.forEach(item => { %>
-                                <tr>
-                                    <td class="fw-medium"><%= item.hostname %></td>
-                                    <td>
-                                        <% if (item.status === 'complete') { %>
-                                            <span class="badge-status bg-success bg-opacity-10 text-success"><i class="bi bi-check2"></i> Complete</span>
-                                        <% } else { %>
-                                            <span class="badge-status bg-warning bg-opacity-10 text-warning"><i class="bi bi-hourglass-split"></i> Pending</span>
-                                        <% } %>
-                                    </td>
-                                    <td class="text-muted"><%= new Date(item.lastCrawledAt).toLocaleString() %></td>
-                                </tr>
-                            <% }) %>
-                        </tbody>
-
-                    <% } else if (tab === 'queues') { %>
-                        <thead>
-                            <tr>
-                                <th>URL</th>
-                                <th>Hostname</th>
-                                <th>Depth Level</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% tableData.forEach(item => { %>
-                                <tr>
-                                    <td><a href="<%= item.url %>" target="_blank" class="url-text"><%= item.url %></a></td>
-                                    <td class="text-muted"><%= item.hostname %></td>
-                                    <td><span class="badge bg-light text-dark border">Lvl <%= item.level %></span></td>
-                                    <td>
-                                        <% if (item.visited) { %>
-                                            <span class="badge-status bg-success bg-opacity-10 text-success">Visited</span>
-                                        <% } else { %>
-                                            <span class="badge-status bg-secondary bg-opacity-10 text-secondary">In Queue</span>
-                                        <% } %>
-                                    </td>
-                                </tr>
-                            <% }) %>
-                        </tbody>
-
-                    <% } else if (tab === 'sites') { %>
-                        <thead>
-                            <tr>
-                                <th>Page Title</th>
-                                <th>URL</th>
-                                <th>Link Juice (Ext / Int)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% tableData.forEach(item => { %>
-                                <tr>
-                                    <td class="fw-medium text-truncate" style="max-width: 250px;">
-                                        <%= item.title %>
-                                    </td>
-                                    <td><a href="<%= item.url %>" target="_blank" class="url-text"><%= item.url %></a></td>
-                                    <td>
-                                        <span class="badge bg-primary bg-opacity-10 text-primary me-2" title="External Backlinks">
-                                            <i class="bi bi-box-arrow-in-right"></i> <%= item.externalBacklinks || 0 %>
-                                        </span>
-                                        <span class="badge bg-secondary bg-opacity-10 text-secondary" title="Internal Backlinks">
-                                            <i class="bi bi-diagram-2"></i> <%= item.internalBacklinks || 0 %>
-                                        </span>
-                                    </td>
-                                </tr>
-                            <% }) %>
-                        </tbody>
-                    <% } %>
-
-                    <% if (tableData.length === 0) { %>
-                        <tr>
-                            <td colspan="4" class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                                No data found in this category.
-                            </td>
-                        </tr>
-                    <% } %>
-                </table>
             </div>
         </div>
-
-        <% if (totalPages > 1) { %>
-            <nav aria-label="Table navigation">
-                <ul class="pagination justify-content-center">
-                    <% if (currentPage > 1) { %>
-                        <li class="page-item">
-                            <a class="page-link shadow-sm border-0 rounded-pill mx-1 px-4 text-primary" href="/statistics?tab=<%= tab %>&page=<%= currentPage - 1 %>">
-                                <i class="bi bi-chevron-left me-1"></i> Prev
-                            </a>
-                        </li>
-                    <% } %>
-                    
-                    <% if (currentPage < totalPages) { %>
-                        <li class="page-item">
-                            <a class="page-link shadow-sm border-0 rounded-pill mx-1 px-4 text-primary" href="/statistics?tab=<%= tab %>&page=<%= currentPage + 1 %>">
-                                Next <i class="bi bi-chevron-right ms-1"></i>
-                            </a>
-                        </li>
-                    <% } %>
-                </ul>
-            </nav>
-        <% } %>
-
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
