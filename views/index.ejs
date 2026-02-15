@@ -507,13 +507,13 @@
                 <div class="container-fluid px-3 px-md-4">
                     <div class="d-flex align-items-center flex-wrap gap-3">
                         <% if (typeof logoPath !== 'undefined' && logoPath) { %>
-                            <a href="/" aria-label="Go to homepage">
                             <a href="/" class="njin-logo-small" aria-label="Go to homepage">N-jin</a>
-
-                            </a>
+                            
                         <% } else { %>
+                            <a href="/" aria-label="Go to homepage">
                                 <img src="/logo/logo.png" alt="N-jin" style="width: clamp(50px, 10vw, 60px);">
 
+                            </a>
                         <% } %>
                         
                         <form action="/search" method="GET" style="flex: 1; max-width: 600px; min-width: 0;">
