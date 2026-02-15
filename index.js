@@ -32,7 +32,11 @@ const dbConnect = async (uri) => {
 
 // 2. INITIALIZE REDIS CLIENT
 const redisClient = redis.createClient({
-    url: process.env.REDIS_URI
+    url: process.env.REDIS_URI,
+    socket: {
+        tls: true,
+        rejectUnauthorized: false // Often needed for serverless providers like Upstash
+    }
 });
 
 redisClient.on('error', (err) => console.log('Redis Client Error', err));
