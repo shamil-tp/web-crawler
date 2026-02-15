@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index",
-    "crawler": "node ./parser/v9.js",
+    "crawler": "node ./parsers/v9.js",
     "build":"npm install"
   },
   "dependencies": {
