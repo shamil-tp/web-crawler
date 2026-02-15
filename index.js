@@ -1,14 +1,23 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Site = require('./modal/Site');
+const Queue = require('./modal/Queue');
+const Domain = require('./modal/Domain');
 
 const app = express();
 
-
+// --- MIDDLEWARE ---
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
+// --- HELPER FUNCTION: Prevent Regex Crashes ---
+// Escapes special characters like +, ?, or * if a user searches for them
+const escapeRegex = (string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
+// --- DATABASE CONNECTION ---
 const dbConnect = async (uri) => {
     try {
         await mongoose.connect(uri);
@@ -18,36 +27,40 @@ const dbConnect = async (uri) => {
     }
 };
 
+// --- ROUTES ---
 
+// 1. The Home Page
 app.get('/', (req, res) => {
     res.render('index', { results: null, query: "" });
 });
 
+// 2. The N-jin Search Engine API
 app.get('/search', async (req, res) => {
     const searchQuery = req.query.q;
     
-    // 1. Get the current page from the URL (default to 1 if it doesn't exist)
+    // Pagination Setup
     const page = parseInt(req.query.page) || 1;
-    const limit = 15; // How many results per page
-    const skip = (page - 1) * limit; // Calculate how many documents to jump over
+    const limit = 15; // Results per page
+    const skip = (page - 1) * limit; 
 
     if (!searchQuery || searchQuery.trim() === "") {
         return res.redirect('/');
     }
 
     try {
-        // 2. Count the total number of matches in the entire database
-        // We need this so the frontend knows how many "Next Page" buttons to draw
+        // Count total matches for the EJS pagination UI
         const totalResults = await Site.countDocuments({ $text: { $search: searchQuery } });
         const totalPages = Math.ceil(totalResults / limit);
 
-        // 3. The Paginated Search Query
+        // Sanitize the user's input so it doesn't break our URL/Title regex heuristics
+        const safeRegexQuery = escapeRegex(searchQuery); 
+
         // THE MAGIC: The N-jin Aggregation Ranking Engine
         const results = await Site.aggregate([
-            // 1. FILTER: Grab only pages that actually contain the search keywords
+            // A. FILTER: Grab only pages that actually contain the search keywords
             { $match: { $text: { $search: searchQuery } } },
 
-            // 2. CALCULATE: Define the raw mathematical variables
+            // B. CALCULATE: Define the raw mathematical variables
             { 
                 $addFields: {
                     // Get the base TF-IDF text score
@@ -68,13 +81,13 @@ app.get('/search', async (req, res) => {
                     },
 
                     // Heuristics: Did the user's exact query appear in the URL or the Title?
-                    isTitleMatch: { $regexMatch: { input: "$title", regex: searchQuery, options: "i" } },
+                    isTitleMatch: { $regexMatch: { input: "$title", regex: safeRegexQuery, options: "i" } },
                     // Replace spaces with hyphens for the URL check (e.g. "react router" -> "react-router")
-                    isUrlMatch: { $regexMatch: { input: "$url", regex: searchQuery.replace(/\s+/g, '-'), options: "i" } }
+                    isUrlMatch: { $regexMatch: { input: "$url", regex: safeRegexQuery.replace(/\s+/g, '-'), options: "i" } }
                 }
             },
 
-            // 3. APPLY HEURISTIC MULTIPLIERS
+            // C. APPLY HEURISTIC MULTIPLIERS
             {
                 $addFields: {
                     // If the keyword is literally in the Title, triple the score!
@@ -84,7 +97,7 @@ app.get('/search', async (req, res) => {
                 }
             },
 
-            // 4. COMBINE: The Final Equation
+            // D. COMBINE: The Final N-jin Score Equation
             {
                 $addFields: {
                     njinScore: { 
@@ -99,13 +112,13 @@ app.get('/search', async (req, res) => {
                 }
             },
 
-            // 5. SORT & PAGINATE: Highest N-jin Score wins
+            // E. SORT & PAGINATE: Highest N-jin Score wins
             { $sort: { njinScore: -1 } },
             { $skip: skip },
             { $limit: limit }
         ]);
 
-        // 4. Send all this rich data to the EJS view
+        // Send all this rich data to the EJS view
         res.render('index', { 
             results: results, 
             query: searchQuery,
@@ -119,10 +132,58 @@ app.get('/search', async (req, res) => {
         res.status(500).send("Error executing search.");
     }
 });
+// 3. The N-jin Statistics Dashboard
+app.get('/statistics', async (req, res) => {
+    // Determine which tab is active (default to 'domains')
+    const tab = req.query.tab || 'domains';
+    const page = parseInt(req.query.page) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
 
+    try {
+        // 1. Get the raw total counts for the top cards
+        const totalDomains = await Domain.countDocuments();
+        const completedDomains = await Domain.countDocuments({ status: "complete" });
+        const totalQueues = await Queue.countDocuments();
+        const visitedUrls = await Queue.countDocuments({ visited: true });
+        const totalSites = await Site.countDocuments();
 
+        // 2. Fetch the specific table data based on the clicked tab
+        let tableData = [];
+        let totalItemsForTab = 0;
+
+        if (tab === 'domains') {
+            tableData = await Domain.find().sort({ lastCrawledAt: -1 }).skip(skip).limit(limit);
+            totalItemsForTab = totalDomains;
+        } else if (tab === 'queues') {
+            tableData = await Queue.find().sort({ _id: -1 }).skip(skip).limit(limit);
+            totalItemsForTab = totalQueues;
+        } else if (tab === 'sites') {
+            tableData = await Site.find().sort({ _id: -1 }).skip(skip).limit(limit);
+            totalItemsForTab = totalSites;
+        }
+
+        const totalPages = Math.ceil(totalItemsForTab / limit);
+
+        // 3. Send everything to the EJS view
+        res.render('statistics', {
+            stats: { totalDomains, completedDomains, totalQueues, visitedUrls, totalSites },
+            tableData: tableData,
+            tab: tab,
+            currentPage: page,
+            totalPages: totalPages
+        });
+
+    } catch (error) {
+        console.log("Stats error:", error.message);
+        res.status(500).send("Error loading N-jin Control Center.");
+    }
+});
+
+// --- START SERVER ---
 const PORT = 3000;
 app.listen(PORT, async () => {
+    // ⚠️ REPLACE <PASSWORD> WITH YOUR ACTUAL ATLAS PASSWORD ⚠️
     await dbConnect("mongodb+srv://shamil:urcx5298@mysnapgram.zq2yd.mongodb.net/crawler");
-    console.log(`🚀 N-jin is live at http://localhost:${PORT}`);
+    console.log(`🚀 N-jin Server is live at http://localhost:${PORT}`);
 });
