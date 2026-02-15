@@ -7,7 +7,7 @@ const Site = require('../modal/Site');
 const Domain = require('../modal/Domain'); 
 // REMOVED: Queue model (MongoDB queue is now obsolete)
 
-const CONCURRENT_DOMAINS = 20; 
+const CONCURRENT_DOMAINS = porcess.env.CONCURRENT_DOMAINS;
 
 // --- INITIALIZE REDIS CLIENT ---
 const redisClient = redis.createClient({
@@ -116,8 +116,10 @@ const crawlOnePage = async (domain) => {
             if (href && !href.startsWith('#')) {
                 try {
                     const scrapedObj = new URL(href, currentUrl);
+                    const cleanUrl = scrapedObj.href.split('#')[0].replace(/\/$/, "");
                     if (scrapedObj.hostname === hostname) {
-                        newLinks.add(scrapedObj.href); 
+                        // newLinks.add(scrapedObj.href); 
+                        newLinks.add(cleanUrl);
                     } else {
                         externalDomains.add(scrapedObj.hostname);
                         externalLinks.set(scrapedObj.href, scrapedObj.hostname);

@@ -5,7 +5,7 @@ const Site = require('../modal/Site');
 const Queue = require('../modal/Queue');
 const Domain = require('../modal/Domain'); 
 
-const CONCURRENT_DOMAINS = 20; 
+const CONCURRENT_DOMAINS = porcess.env.CONCURRENT_DOMAINS
 
 const dbConnect = async (uri) => {
     try {
