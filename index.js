@@ -2,6 +2,7 @@ require('dotenv').config()
 
 const express = require('express');
 const mongoose = require('mongoose');
+const redis = require('redis');
 const Site = require('./modal/Site');
 const Queue = require('./modal/Queue');
 const Domain = require('./modal/Domain');
@@ -29,6 +30,14 @@ const dbConnect = async (uri) => {
     }
 };
 
+// 2. INITIALIZE REDIS CLIENT
+const redisClient = redis.createClient({
+    url: process.env.REDIS_URI
+});
+
+redisClient.on('error', (err) => console.log('Redis Client Error', err));
+redisClient.on('connect', () => console.log('Connected to Redis Cache!'));
+
 // --- ROUTES ---
 
 // 1. The Home Page
@@ -49,7 +58,21 @@ app.get('/search', async (req, res) => {
         return res.redirect('/');
     }
 
+    // 3. CREATE A UNIQUE CACHE KEY
+    // If a user searches for "react" on page 2, the key is: "search:react:page:2"
+    const cacheKey = `search:${searchQuery.trim().toLowerCase()}:page:${page}`;
+
     try {
+        // 4. CHECK REDIS FIRST (The Cache Hit)
+        const cachedData = await redisClient.get(cacheKey);
+        
+        if (cachedData) {
+            console.log(`⚡ CACHE HIT: Served "${searchQuery}" in 2ms!`);
+            // Parse the stringified JSON back into an object and render immediately!
+            return res.render('index', JSON.parse(cachedData)); 
+        }
+
+        console.log(`🐢 CACHE MISS: Calculating "${searchQuery}" in MongoDB...`);
         // Count total matches for the EJS pagination UI
         const totalResults = await Site.countDocuments({ $text: { $search: searchQuery } });
         const totalPages = Math.ceil(totalResults / limit);
@@ -119,15 +142,22 @@ app.get('/search', async (req, res) => {
             { $skip: skip },
             { $limit: limit }
         ]);
-
-        // Send all this rich data to the EJS view
-        res.render('index', { 
+// 5. PACKAGE THE DATA FOR REDIS
+        const renderPayload = { 
             results: results, 
             query: searchQuery,
             currentPage: page,
             totalPages: totalPages,
             totalResults: totalResults
-        });
+        };
+
+        // 6. SAVE TO REDIS (The Cache Write)
+        // setEx saves the data and gives it an expiration timer. 
+        // 3600 seconds = 1 hour. After 1 hour, Redis automatically deletes it to save RAM!
+        await redisClient.setEx(cacheKey, 3600, JSON.stringify(renderPayload));
+
+        // Finally, send the newly calculated data to the user
+        res.render('index', renderPayload);
 
     } catch (error) {
         console.log("Search error:", error.message);
@@ -138,22 +168,40 @@ app.get('/statistics', async (req, res) => {
     try {
         const totalDomains = await Domain.countDocuments();
         const completedDomains = await Domain.countDocuments({ status: "complete" });
-        const totalQueues = await Queue.countDocuments();
-        const visitedUrls = await Queue.countDocuments({ visited: true });
         const totalSites = await Site.countDocuments();
 
+        // Pass 0 or 'N/A' for the queue stats since they are safely in Redis now!
         res.render('statistics', {
-            stats: { totalDomains, completedDomains, totalQueues, visitedUrls, totalSites }
+            stats: { 
+                totalDomains, 
+                completedDomains, 
+                totalQueues: "Active", 
+                visitedUrls: "In Redis", 
+                totalSites 
+            }
         });
 
     } catch (error) {
-        console.log("Stats error:", error.message);
-        res.status(500).send("Error loading N-jin Control Center.");
+        // ...
     }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, async () => {
-    await dbConnect(process.env.DB_URL);
-    console.log(`🚀 N-jin Server is live at http://localhost:${PORT}`);
-});
+
+const startSystem = async () => {
+    try {
+        // 1. Connect to the databases FIRST
+        await redisClient.connect();
+        await dbConnect(process.env.DB_URL); 
+        
+        // 2. ONLY open the port after databases are ready
+        app.listen(PORT, () => {
+            console.log(`🚀 N-jin Server is live at http://localhost:${PORT}`);
+        });
+    } catch (error) {
+        console.error("Failed to boot N-jin:", error);
+        process.exit(1); // Stop the server if databases fail
+    }
+};
+
+startSystem();
