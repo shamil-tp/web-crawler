@@ -1,3 +1,4 @@
 node_modules
 .env
 railway.json
+statistics.ejs
