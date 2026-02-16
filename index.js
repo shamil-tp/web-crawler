@@ -6,6 +6,7 @@ const redis = require('redis');
 const Site = require('./modal/Site');
 const Queue = require('./modal/Queue');
 const Domain = require('./modal/Domain');
+const System = require('./modal/System');
 
 const app = express();
 
@@ -174,7 +175,12 @@ app.get('/statistics', async (req, res) => {
         const completedDomains = await Domain.countDocuments({ status: "complete" });
         const totalSites = await Site.countDocuments();
 
-        // Pass 0 or 'N/A' for the queue stats since they are safely in Redis now!
+        // Get or create the master configuration
+        let systemConfig = await System.findOne({ configId: 'master' });
+        if (!systemConfig) {
+            systemConfig = await System.create({ configId: 'master', crawlerPaused: false });
+        }
+
         res.render('statistics', {
             stats: { 
                 totalDomains, 
@@ -182,11 +188,28 @@ app.get('/statistics', async (req, res) => {
                 totalQueues: "Active", 
                 visitedUrls: "In Redis", 
                 totalSites 
-            }
+            },
+            isPaused: systemConfig.crawlerPaused // Pass the status to EJS
         });
 
     } catch (error) {
-        // ...
+        console.log("Stats error:", error.message);
+        res.status(500).send("Error loading N-jin Control Center.");
+    }
+});
+// The API route triggered by your Pause/Resume button
+app.post('/api/crawler/toggle', async (req, res) => {
+    try {
+        let systemConfig = await System.findOne({ configId: 'master' });
+        
+        // Flip the boolean (if true, make false. If false, make true)
+        systemConfig.crawlerPaused = !systemConfig.crawlerPaused;
+        await systemConfig.save();
+
+        // Redirect right back to the dashboard
+        res.redirect('/statistics');
+    } catch (error) {
+        res.status(500).send("Error toggling crawler state.");
     }
 });
 

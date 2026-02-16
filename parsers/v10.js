@@ -5,7 +5,8 @@ const cheerio = require('cheerio');
 const mongoose = require('mongoose');
 const redis = require('redis'); // ADDED: Redis
 const Site = require('../modal/Site');
-const Domain = require('../modal/Domain'); 
+const Domain = require('../modal/Domain');
+const System = require('../modal/System'); 
 // REMOVED: Queue model (MongoDB queue is now obsolete)
 
 const CONCURRENT_DOMAINS = process.env.CONCURRENT_DOMAINS || 2;
@@ -203,6 +204,14 @@ const startManager = async () => {
     console.log(`Starting Cluster Manager (Concurrency: ${CONCURRENT_DOMAINS})`);
 
     while (true) {
+        let systemConfig = await System.findOne({ configId: 'master' });
+        
+        // If the switch is flipped, go to sleep for 5 seconds and check again
+        if (systemConfig && systemConfig.crawlerPaused === true) {
+            console.log("⏸️ Crawler is PAUSED. Waiting for resume signal...");
+            await new Promise(r => setTimeout(r, 5000));
+            continue; // Skips the rest of the loop!
+        }
         const activeDomains = await Domain.find({ status: { $ne: "complete" } })
             .sort({ lastCrawledAt: 1 }) 
             .limit(CONCURRENT_DOMAINS)
