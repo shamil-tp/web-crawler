@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 const axios = require('axios');
 const cheerio = require('cheerio');
 const mongoose = require('mongoose');
@@ -7,11 +8,12 @@ const Site = require('../modal/Site');
 const Domain = require('../modal/Domain'); 
 // REMOVED: Queue model (MongoDB queue is now obsolete)
 
-const CONCURRENT_DOMAINS = process.env.CONCURRENT_DOMAINS;
+const CONCURRENT_DOMAINS = process.env.CONCURRENT_DOMAINS || 2;
 
 // --- INITIALIZE REDIS CLIENT ---
 const redisClient = redis.createClient({
-    url: process.env.REDIS_URI
+    url: process.env.REDIS_URI,
+    pingInterval: 5000
 });
 redisClient.on('error', (err) => console.log('Redis Crawler Error', err));
 
