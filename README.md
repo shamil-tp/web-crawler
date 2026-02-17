@@ -28,15 +28,18 @@ This project demonstrates how search engines and indexing systems work at a fund
 
 ## 📁 Project Structure
 
+```
 web-crawler/
 │
-├── index.js # Entry point of the application
-├── crawl.js # Crawling logic
-├── report.js # Reporting logic (if exists)
-├── package.json # Dependencies and scripts
+├── index.js        # Entry point of the application
+├── crawl.js        # Crawling logic
+├── report.js       # Reporting logic (if exists)
+├── package.json    # Dependencies and scripts
 ├── package-lock.json
 ├── .gitignore
 └── README.md
+```
+
 
 
 *(Adjust this structure if your actual repo differs.)*
