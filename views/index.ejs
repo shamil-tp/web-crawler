@@ -1,617 +1,434 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>N-jin Search</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0f0f14;
-            --bg-card: #1a1a24;
-            --bg-elevated: #222230;
-            --accent-primary: #6366f1;
-            --accent-secondary: #8b5cf6;
-            --text-primary: #e4e4e7;
-            --text-secondary: #a1a1aa;
-            --text-muted: #71717a;
-            --border-subtle: rgba(255, 255, 255, 0.06);
-            --border-light: rgba(255, 255, 255, 0.1);
-            --glow-subtle: rgba(99, 102, 241, 0.08);
+            --bg: #ffffff;
+            --fg: #111827;
+            --accent: #4f46e5; /* Vibrant indigo */
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --focus: #4f46e5;
+            --logo-blend: multiply;
+            --img-invert: 0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #030712;
+                --fg: #f9fafb;
+                --accent: #818cf8; /* Lighter indigo for dark mode */
+                --muted: #9ca3af;
+                --border: #1f2937;
+                --focus: #818cf8;
+                --logo-blend: screen;
+                --img-invert: 1;
+            }
         }
 
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-primary);
-            overflow-x: hidden;
-            position: relative;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--fg);
             line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Subtle animated background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.03), transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.03), transparent 50%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* Content wrapper */
-        .content-wrapper {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Logo styling */
-        .njin-logo {
-            font-family: 'Outfit', sans-serif;
-            font-size: clamp(3.5rem, 10vw, 6rem);
-            font-weight: 800;
-            letter-spacing: -3px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            user-select: none;
-            position: relative;
-            display: inline-block;
-        }
-
-        .njin-logo-small {
-            font-family: 'Outfit', sans-serif;
-            font-size: clamp(1.3rem, 4vw, 1.8rem);
-            font-weight: 800;
-            letter-spacing: -1px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        a {
+            color: var(--fg);
             text-decoration: none;
-            transition: opacity 0.3s ease;
         }
 
-        .njin-logo-small:hover {
-            opacity: 0.8;
+        /* Typography */
+        h1, h2, h3 {
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.2;
         }
 
-        /* Tagline */
-        .tagline {
-            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-            color: var(--text-secondary);
-            font-weight: 500;
-            letter-spacing: 1px;
-            margin-top: 1rem;
-            opacity: 0;
-            animation: fadeInUp 0.6s ease forwards;
-            animation-delay: 0.2s;
+        p {
+            font-size: 1rem;
+            color: var(--muted);
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(15px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        /* Logo Styling */
+        .logo-text {
+            font-size: 4rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            color: var(--fg);
+            text-transform: lowercase;
         }
 
-        /* Search container */
-        .search-container {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: 50px;
-            padding: 6px 6px 6px 24px;
-            transition: all 0.3s ease;
-            position: relative;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        .logo-img {
+            max-width: 200px;
         }
 
-        .search-container:hover,
-        .search-container:focus-within {
-            border-color: var(--border-light);
-            box-shadow: 
-                0 8px 30px rgba(0, 0, 0, 0.3),
-                0 0 0 3px var(--glow-subtle);
+        .logo-mini-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: var(--fg);
+            text-transform: lowercase;
+        }
+
+        .logo-mini-img {
+            height: 32px;
+        }
+
+        /* Forms */
+        .search-form {
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .search-group {
+            display: flex;
+            align-items: center;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            padding: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .search-group:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
         }
 
         .search-input {
-            background: transparent;
+            flex: 1;
             border: none;
-            color: var(--text-primary);
-            font-size: clamp(0.95rem, 2.5vw, 1.05rem);
-            font-weight: 500;
-            padding: 14px 0;
-            width: 100%;
-            border-radius: 50px;
+            background: transparent;
+            font-size: 1.125rem;
+            font-family: inherit;
+            padding: 0.75rem 1rem;
+            color: var(--fg);
+            outline: none;
         }
 
         .search-input::placeholder {
-            color: var(--text-muted);
-            font-weight: 400;
+            color: #999;
         }
 
-        .search-input:focus {
-            outline: none;
-            box-shadow: none;
-        }
-
-        .search-icon {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            transition: color 0.3s ease;
-        }
-
-        .search-container:focus-within .search-icon {
-            color: var(--accent-primary);
-        }
-
-        /* Search button */
-        .njin-btn {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        .btn {
+            background: var(--accent);
+            color: #ffffff;
             border: none;
-            color: white;
+            border-radius: 6px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
             font-weight: 600;
-            padding: 13px 28px;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            font-size: clamp(0.85rem, 2vw, 0.95rem);
-            white-space: nowrap;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .njin-btn:hover {
+        .btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
 
-        .njin-btn:active {
-            transform: translateY(0);
+        /* Layouts */
+        .home-layout {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
         }
 
-        /* Header/Navbar */
-        .search-header {
-            background: rgba(15, 15, 20, 0.85);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-subtle);
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
             position: sticky;
             top: 0;
-            z-index: 100;
+            background: var(--bg);
+            z-index: 10;
         }
 
-        /* Results wrapper */
-        .results-wrapper {
+        .header .search-form {
+            margin: 0;
             max-width: 720px;
-            margin: 0 auto;
-            padding: 0 1rem;
         }
 
-        @media (min-width: 992px) {
-            .results-wrapper {
-                margin-left: max(100px, 10%);
+        .header .search-group {
+            border-width: 1px;
+            padding: 0.25rem;
+        }
+
+        .header .search-input {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+        }
+
+        .header .btn {
+            padding: 0.5rem 1rem;
+        }
+
+        .main-content {
+            max-width: 720px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        @media (min-width: 1024px) {
+            .main-content {
+                margin-left: 10%;
                 margin-right: auto;
             }
         }
 
-        /* Result items */
+        /* Results */
+        .stats {
+            font-size: 0.875rem;
+            color: var(--muted);
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
         .result-item {
             margin-bottom: 2rem;
-            padding: 1.25rem;
-            background: var(--bg-card);
-            border-radius: 12px;
-            border: 1px solid var(--border-subtle);
-            transition: all 0.25s ease;
-            position: relative;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
         }
 
-        .result-item:hover {
-            background: var(--bg-elevated);
-            border-color: var(--border-light);
-            transform: translateX(4px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        /* URL container */
-        .result-url-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
-            flex-wrap: wrap;
-        }
-
-        .favicon-img {
-            width: 18px;
-            height: 18px;
-            border-radius: 4px;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 2px;
-            flex-shrink: 0;
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
         }
 
         .result-url {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-            word-break: break-all;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--fg);
+            margin-bottom: 0.25rem;
         }
 
-        .result-url:hover {
-            color: var(--accent-primary);
+        .favicon {
+            width: 16px;
+            height: 16px;
+            filter: grayscale(100%) invert(var(--img-invert));
         }
 
-        /* Result title */
         .result-title {
-            color: var(--text-primary);
-            font-size: clamp(1.1rem, 3vw, 1.25rem);
+            font-size: 1.25rem;
             font-weight: 600;
-            text-decoration: none;
-            display: block;
+            color: var(--fg);
+            display: inline-block;
             margin-bottom: 0.5rem;
-            transition: color 0.25s ease;
-            line-height: 1.4;
+            text-decoration: underline;
+            text-decoration-color: transparent;
+            transition: text-decoration-color 0.2s;
         }
 
         .result-title:hover {
-            color: var(--accent-primary);
+            text-decoration-color: var(--accent);
+            color: var(--accent);
         }
 
-        .result-title:visited {
-            color: var(--text-secondary);
+        .result-snippet {
+            font-size: 0.9375rem;
+            color: var(--muted);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
-        /* Result description */
-        .result-desc {
-            color: var(--text-secondary);
-            font-size: clamp(0.85rem, 2vw, 0.92rem);
-            line-height: 1.65;
-            margin-bottom: 0;
-        }
-
-        /* Stats bar */
-        .stats-bar {
-            color: var(--text-muted);
-            font-size: 0.82rem;
-            font-weight: 500;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid var(--border-subtle);
-            margin-bottom: 1.5rem;
+        /* Highlighting */
+        mark, .highlight {
+            background-color: var(--accent);
+            color: #ffffff;
+            padding: 0 0.3em;
+            border-radius: 4px;
+            font-weight: 600;
         }
 
         /* Pagination */
-        .njin-pagination {
-            display: flex;
-            gap: 10px;
-            padding: 2rem 0;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        @media (min-width: 768px) {
-            .njin-pagination {
-                justify-content: flex-start;
-            }
-        }
-
-        .page-btn {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-primary);
-            padding: 10px 18px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.88rem;
-            transition: all 0.25s ease;
+        .pagination {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 1rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
         }
 
-        .page-btn:hover {
-            background: var(--bg-elevated);
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
-            transform: translateY(-1px);
-        }
-
-        .page-indicator {
-            color: var(--text-secondary);
+        .page-link {
             font-weight: 600;
-            font-size: 0.88rem;
-            padding: 0 10px;
+            color: var(--fg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s;
         }
 
-        /* No results styling */
+        .page-link:hover {
+            border-color: var(--accent);
+            background: var(--accent);
+            color: #ffffff;
+        }
+
+        .page-info {
+            font-size: 0.875rem;
+            color: var(--muted);
+        }
+
+        /* No Results */
         .no-results {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: 12px;
-            padding: 2.5rem 2rem;
-            margin-top: 2rem;
+            padding: 3rem 0;
         }
 
         .no-results h2 {
-            color: var(--text-primary);
-            font-size: clamp(1.2rem, 3vw, 1.4rem);
-            font-weight: 600;
+            font-size: 1.5rem;
             margin-bottom: 1rem;
         }
 
-        .no-results ul {
-            max-width: 500px;
-            margin: 1rem 0;
-            color: var(--text-secondary);
-            padding-left: 1.5rem;
-        }
-
-        .no-results li {
-            margin-bottom: 0.5rem;
-            line-height: 1.7;
-        }
-
-        /* Animations on load */
-        .result-item {
-            opacity: 0;
-            animation: resultFadeIn 0.4s ease forwards;
-        }
-
-        .result-item:nth-child(1) { animation-delay: 0.05s; }
-        .result-item:nth-child(2) { animation-delay: 0.1s; }
-        .result-item:nth-child(3) { animation-delay: 0.15s; }
-        .result-item:nth-child(4) { animation-delay: 0.2s; }
-        .result-item:nth-child(5) { animation-delay: 0.25s; }
-        .result-item:nth-child(n+6) { animation-delay: 0.3s; }
-
-        @keyframes resultFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Home page container */
-        .home-container {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem 1rem;
-        }
-
-        /* Improved focus states for accessibility */
-        .search-input:focus,
-        .njin-btn:focus,
-        .page-btn:focus,
-        .result-title:focus {
-            outline: 2px solid var(--accent-primary);
-            outline-offset: 2px;
-        }
-
-        /* Loading state placeholder */
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* Responsive typography adjustments */
         @media (max-width: 768px) {
-            .njin-logo {
-                letter-spacing: -2px;
-            }
-
-            .search-container {
-                padding: 6px 6px 6px 20px;
-            }
-
-            .result-item {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
                 padding: 1rem;
+                gap: 1rem;
             }
-
-            .njin-btn {
-                padding: 12px 20px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .tagline {
-                letter-spacing: 0.5px;
-            }
-
-            .njin-btn {
-                padding: 11px 18px;
-                font-size: 0.85rem;
-            }
-
-            .result-item {
-                margin-bottom: 1.5rem;
-            }
-        }
-
-        /* Better touch targets for mobile */
-        @media (hover: none) and (pointer: coarse) {
-            .page-btn,
-            .result-title,
-            .result-url {
-                min-height: 44px;
-                display: flex;
-                align-items: center;
+            .main-content {
+                padding: 0 1rem;
+                margin-top: 2rem;
             }
         }
     </style>
 </head>
-
 <body>
-    <div class="content-wrapper">
-        <% if (!results) { %>
-            <!-- Home page -->
-            <div class="home-container">
+
+    <% if (!results) { %>
+        <!-- Home Page -->
+        <main class="home-layout">
+            <div style="margin-bottom: 2rem;">
                 <% if (typeof logoPath !== 'undefined' && logoPath) { %>
-                    <h1 class="njin-logo">N-jin</h1>
+                    <h1 class="logo-text">n-jin.</h1>
                 <% } else { %>
-                    <img src="/logo/logo.png" alt="N-jin" style="max-width: min(200px, 60vw); margin-bottom: 1.5rem;">
+                    <img src="/logo/logo.png" alt="N-jin Logo" class="logo-img">
                 <% } %>
-                
-                <p class="tagline">Search smarter, find faster</p>
-
-                <form action="/search" method="GET" class="w-100 px-3 mt-5" style="max-width: 650px;">
-                    <div class="search-container d-flex align-items-center">
-                        <i class="bi bi-search search-icon me-3"></i>
-                        <input 
-                            type="text" 
-                            name="q"
-                            class="search-input"
-                            placeholder="Search the web..."
-                            required 
-                            autofocus 
-                            autocomplete="off"
-                            aria-label="Search query">
-                        <button type="submit" class="njin-btn ms-2" aria-label="Search">
-                            Search
-                        </button>
-                    </div>
-                </form>
             </div>
 
-        <% } else { %>
-            <!-- Results page -->
-            <div class="search-header py-3">
-                <div class="container-fluid px-3 px-md-4">
-                    <div class="d-flex align-items-center flex-wrap gap-3">
-                        <% if (typeof logoPath !== 'undefined' && logoPath) { %>
-                            <a href="/" class="njin-logo-small" aria-label="Go to homepage">N-jin</a>
-                            
-                        <% } else { %>
-                            <a href="/" aria-label="Go to homepage">
-                                <img src="/logo/logo.png" alt="N-jin" style="width: clamp(50px, 10vw, 60px);">
+            <form action="/search" method="GET" class="search-form">
+                <div class="search-group">
+                    <input 
+                        type="text" 
+                        name="q"
+                        class="search-input"
+                        placeholder="Search..."
+                        required 
+                        autofocus 
+                        autocomplete="off">
+                    <button type="submit" class="btn">Search</button>
+                </div>
+            </form>
+        </main>
 
-                            </a>
-                        <% } %>
-                        
-                        <form action="/search" method="GET" style="flex: 1; max-width: 600px; min-width: 0;">
-                            <div class="search-container d-flex align-items-center">
-                                <i class="bi bi-search search-icon me-2"></i>
-                                <input 
-                                    type="text" 
-                                    name="q" 
-                                    class="search-input" 
-                                    value="<%= query %>" 
-                                    required 
-                                    autocomplete="off"
-                                    aria-label="Search query">
-                                <button class="btn border-0 p-2" type="submit" style="color: var(--accent-primary);" aria-label="Search">
-                                    <i class="bi bi-search" style="font-size: 1.3rem;"></i>
-                                </button>
+    <% } else { %>
+        <!-- Results Page -->
+        <header class="header">
+            <a href="/" style="display: block;">
+                <% if (typeof logoPath !== 'undefined' && logoPath) { %>
+                    <div class="logo-mini-text">n-jin.</div>
+                <% } else { %>
+                    <img src="/logo/logo.png" alt="N-jin" class="logo-mini-img">
+                <% } %>
+            </a>
+
+            <form action="/search" method="GET" class="search-form">
+                <div class="search-group">
+                    <input 
+                        type="text" 
+                        name="q" 
+                        class="search-input" 
+                        value="<%= query %>" 
+                        required 
+                        autocomplete="off">
+                    <button type="submit" class="btn">Search</button>
+                </div>
+            </form>
+        </header>
+
+        <main class="main-content">
+            <div class="stats">
+                <%= totalResults.toLocaleString() %> results for <span class="highlight"><%= query %></span>
+            </div>
+
+            <% if (results.length === 0) { %>
+                <div class="no-results">
+                    <h2>No matches</h2>
+                    <p>Your search <span class="highlight"><%= query %></span> did not match any documents.</p>
+                </div>
+            <% } else { %>
+                <div class="results-list">
+                    <% results.forEach(site => { %>
+                        <article class="result-item">
+                            <div class="result-url">
+                                <% if (site.favicon) { %>
+                                    <img src="<%= site.favicon %>" alt="" class="favicon" onerror="this.style.display='none'">
+                                <% } %>
+                                <span><%= site.url.replace(/^https?:\/\//, '').replace(/\/$/, '') %></span>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <div class="container-fluid mt-4 mb-5">
-                <div class="results-wrapper">
-                    
-                    <p class="stats-bar">
-                        About <%= totalResults.toLocaleString() %> results
-                    </p>
-
-                    <% if (results.length === 0) { %>
-                        <div class="no-results">
-                            <h2>No results found for "<%= query %>"</h2>
-                            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Try these suggestions to improve your search:</p>
-                            <ul>
-                                <li>Check your spelling and try again</li>
-                                <li>Use more general or different keywords</li>
-                                <li>Try fewer keywords for broader results</li>
-                                <li>Give our crawlers time to index more content</li>
-                            </ul>
-                        </div>
-                    <% } else { %>
-
-                        <div class="mt-3">
-                            <% results.forEach(site => { %>
-                                <article class="result-item">
-                                    <div class="result-url-container">
-                                        <% if (site.favicon) { %>
-                                            <img src="<%= site.favicon %>" alt="" class="favicon-img" onerror="this.style.display='none'">
-                                        <% } else { %>
-                                            <div class="favicon-img d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-globe2" style="font-size: 9px; color: var(--text-muted);"></i>
-                                            </div>
-                                        <% } %>
-                                        <a href="<%= site.url %>" class="result-url">
-                                            <%= site.url.replace(/^https?:\/\//, '').replace(/\/$/, '') %>
-                                        </a>
-                                    </div>
-                                    
-                                    <a href="<%= site.url %>" class="result-title">
-                                        <%= site.title %>
-                                    </a>
-                                    
-                                    <p class="result-desc">
-                                        <% if (site.description) { %>
-                                            <%= site.description %>
-                                        <% } else { %>
-                                            <%= site.content.substring(0, 180) %>...
-                                        <% } %>
-                                    </p>
-                                </article>
-                            <% }) %>
-                        </div>
-
-                        <nav class="njin-pagination mt-4" aria-label="Search results pagination">
-                            <% if (currentPage > 1) { %>
-                                <a href="/search?q=<%= encodeURIComponent(query) %>&page=<%= currentPage - 1 %>" class="page-btn" aria-label="Go to previous page">
-                                    <i class="bi bi-chevron-left"></i>
-                                    <span class="d-none d-sm-inline">Previous</span>
-                                </a>
-                            <% } %>
                             
-                            <span class="page-indicator" aria-current="page">Page <%= currentPage %> of <%= totalPages %></span>
-
-                            <% if (currentPage < totalPages) { %>
-                                <a href="/search?q=<%= encodeURIComponent(query) %>&page=<%= currentPage + 1 %>" class="page-btn" aria-label="Go to next page">
-                                    <span class="d-none d-sm-inline">Next</span>
-                                    <i class="bi bi-chevron-right"></i>
-                                </a>
-                            <% } %>
-                        </nav>
-
-                    <% } %> 
+                            <a href="<%= site.url %>">
+                                <h3 class="result-title"><%= site.title %></h3>
+                            </a>
+                            
+                            <p class="result-snippet">
+                                <% if (site.description) { %>
+                                    <%= site.description %>
+                                <% } else { %>
+                                    <%= site.content.substring(0, 180) %>...
+                                <% } %>
+                            </p>
+                        </article>
+                    <% }) %>
                 </div>
-            </div>
 
-        <% } %> 
-    </div>
+                <nav class="pagination">
+                    <% if (currentPage > 1) { %>
+                        <a href="/search?q=<%= encodeURIComponent(query) %>&page=<%= currentPage - 1 %>" class="page-link">
+                            &larr; Prev
+                        </a>
+                    <% } %>
+                    
+                    <span class="page-info"><%= currentPage %> / <%= totalPages %></span>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+                    <% if (currentPage < totalPages) { %>
+                        <a href="/search?q=<%= encodeURIComponent(query) %>&page=<%= currentPage + 1 %>" class="page-link">
+                            Next &rarr;
+                        </a>
+                    <% } %>
+                </nav>
+            <% } %> 
+        </main>
+    <% } %>
+
 </body>
 </html>
